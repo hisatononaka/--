@@ -9,6 +9,7 @@ import sys
 import yaml
 
 from lightning import Trainer
+from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -50,10 +51,19 @@ def main():
     logger_name = cfg.get("logger_name", "dino")
     accelerator = cfg.get("accelerator", "auto")
     logger = CSVLogger(save_dir=log_dir, name=logger_name)
+    # 学習した重みを保存（train_loss 最小のベスト + 最終エポック）
+    checkpoint_callback = ModelCheckpoint(
+        monitor="train_loss",
+        mode="min",
+        save_top_k=1,
+        save_last=True,
+        filename="best-{epoch:02d}-{train_loss:.4f}",
+    )
     trainer = Trainer(
         max_epochs=max_epochs,
         accelerator=accelerator,
         logger=logger,
+        callbacks=[checkpoint_callback],
     )
     trainer.fit(model, datamodule=dm)
 
