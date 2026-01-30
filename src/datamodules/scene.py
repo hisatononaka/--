@@ -11,6 +11,11 @@ from torch.utils.data import DataLoader
 from ..datasets.scene import H5Dataset
 
 
+def _collate_image_batch(batch):
+    """DataLoader 用。[(C,H,W), ...] → {"image": (B,C,H,W)}。num_workers>0 で pickle するためモジュール級で定義。"""
+    return {"image": torch.stack(batch, dim=0)}
+
+
 def _resolve_data_path(root, data_path):
     if isinstance(data_path, (list, tuple)):
         return [os.path.join(root, p) for p in data_path]
@@ -52,7 +57,7 @@ class SceneDataModule(LightningDataModule):
             shuffle=self.shuffle,
             num_workers=self.num_workers,
             drop_last=True,
-            collate_fn=lambda batch: {"image": torch.stack(batch, dim=0)},
+            collate_fn=_collate_image_batch,
         )
 
     def val_dataloader(self):
