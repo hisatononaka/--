@@ -1,0 +1,13 @@
+backbone_name: "vit_small"
+in_channels: 151
+hidden_dim: 2048
+bottleneck_dim: 256
+output_dim: 128
+lr: 0.06
+warmup_epochs: 20
+weight_decay: 1e-5
+momentum: 0.9
+size: 128
+multicrop: True
+n_views: 0
+token_patch_size: 4

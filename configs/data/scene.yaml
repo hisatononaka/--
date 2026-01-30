@@ -1,0 +1,6 @@
+data_path: "data/raw/scene"
+num_bands: 151
+batch_size: 1
+patch_size: 128
+num_workers: 0
+shuffle: false

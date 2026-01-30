@@ -1,0 +1,14 @@
+# DINO 事前学習プロジェクトの依存関係
+# インストール: pip install -r requirements.txt
+
+torch>=2.0.0
+torchvision>=0.15.0
+h5py>=3.8.0
+numpy>=1.21.0
+PyYAML>=6.0
+
+# DINOModule (Lightning) 用
+lightning>=2.0.0
+lightly
+timm
+kornia

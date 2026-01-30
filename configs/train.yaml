@@ -1,0 +1,5 @@
+# Trainer / 学習ループ用
+max_epochs: 100
+accelerator: "auto"
+log_dir: "logs"
+logger_name: "dino"
