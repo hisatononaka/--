@@ -59,12 +59,16 @@ def compute_statistics(data_path: str, output_dir: str, num_bands: int | None) -
     if not h5_files:
         raise FileNotFoundError(f"No .h5 under: {data_root}")
 
+    n_files = len(h5_files)
+    print(f"Computing statistics from {n_files} H5 file(s) under {data_root}", flush=True)
+
     n_total = 0
     mean = None
     m2 = None
     C = None
 
-    for h5_path in h5_files:
+    for file_i, h5_path in enumerate(h5_files, start=1):
+        print(f"  [{file_i}/{n_files}] {h5_path.name} ...", flush=True)
         items = get_h5_image_items(str(h5_path))
         with h5py.File(h5_path, "r") as f:
             for key, index in items:
@@ -91,6 +95,8 @@ def compute_statistics(data_path: str, output_dir: str, num_bands: int | None) -
     if mean is None:
         raise RuntimeError("No valid image found in data_path.")
 
+    print(f"  Done. Total pixels: {n_total:,}, channels: {C}", flush=True)
+
     # 母分散 → 母標準偏差（std が 0 のチャンネルは 1 にして除算エラーを防ぐ）
     variance = m2 / max(n_total, 1)
     std = np.sqrt(np.maximum(variance, 0.0))
@@ -110,6 +116,7 @@ def main():
         out_dir = _project_root / args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    print("Computing per-channel mean/std (Welford)...", flush=True)
     mean, std = compute_statistics(args.data_path, args.output_dir, args.num_bands)
     np.save(out_dir / "mu.npy", mean)
     np.save(out_dir / "sigma.npy", std)
