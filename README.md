@@ -51,13 +51,6 @@ pip install -r requirements.txt
    python scripts/h5_to_npy.py --data-dir data/raw/scene --output-dir data/npy
    ```
 
-5. **データ・metadata の検証**  
-   H5 と metadata の対応、単一ラベル絞り込み後のサンプル数、DataLoader の長さなどを確認する場合（DataLoader が空になる原因の切り分けにも利用）:
-
-   ```bash
-   python test.py
-   ```
-
 ## 学習の実行
 
 プロジェクトルートで実行します。設定は `configs/data/`, `configs/model/`, `configs/train.yaml` をマージして渡します。
