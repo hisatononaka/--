@@ -1,0 +1,9 @@
+# 単一ラベル分類。num_classes は data の single_label_classes の長さから自動設定
+backbone_name: "vit_small"
+token_patch_size: 4
+use_adapter: true
+linear_eval: false
+lr: 0.001
+weight_decay: 1e-5
+warmup_epochs: 5
+# checkpoint_path: null  # 事前学習チェックポイント。未指定ならバックボーンはランダム初期化

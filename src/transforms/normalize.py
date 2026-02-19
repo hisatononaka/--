@@ -2,7 +2,7 @@ import torch
 
 
 class NormalizeMeanStd(torch.nn.Module):
-    """平均・標準偏差で正規化。x = (x - mean) / std。mean, std は (C,) で channel 次元にブロードキャスト。"""
+    """チャンネルごとに (x - mean) / std で正規化。mean, std は (C,) を (1,-1,1,1) に reshape してブロードキャスト。"""
     def __init__(self, mean, std):
         super().__init__()
         if not isinstance(mean, torch.Tensor):

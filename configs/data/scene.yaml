@@ -1,6 +1,18 @@
 data_path: "data/raw/scene"
+statistics_dir: "data/statistics/scene"
+metadata_path: "data/statistics/scene/metadata.json"
 num_bands: 151
-batch_size: 1
+batch_size: 4
 patch_size: 128
-num_workers: 0
+num_workers: 2
 shuffle: false
+
+# 単一ラベル分類用（指定時のみ有効。複数ラベルを単一に絞り batch["label"] を返す）
+single_label_classes: ["waiting room", "office"]
+label_source: "scene"
+multi_to_single: "first"
+# max_samples: 100
+# seed: 42
+
+val_ratio: 0.1   # 単一ラベル時のみ。検証割合（0 なら検証なし）
+test_ratio: 0.1  # 単一ラベル時のみ。テスト割合。残りが train（val_ratio + test_ratio < 1）

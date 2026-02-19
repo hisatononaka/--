@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """
-HDF5 (.h5) を「日付 / グループサブフォルダ / .npy」に展開するスクリプト（Spectral Earth 風）。
-前提: トップレベルは Group の列。各 Group 内に Dataset が 1 つ。
-出力: {output_dir}/{sensor}/{日付}/{グループキー}/0.npy または 00000.npy, 00001.npy, ...
-（グループ = 常にサブフォルダ。中に 1 枚または複数 .npy。）
+HDF5 (.h5) を日付・グループ別の .npy に展開するスクリプト（Spectral Earth 風）。
+トップレベルは Group、各 Group 内に Dataset。出力: {output_dir}/{sensor}/{日付}/{グループキー}/0.npy または 00000.npy, ...
 """
 
 import argparse
@@ -54,7 +52,7 @@ def collect_groups(f) -> list[tuple[str, list[tuple[str, h5py.Dataset]]]]:
 
 
 def get_h5_info(path: str) -> tuple[int, tuple[int, ...], int]:
-    """Group 数、最初の shape、総パッチ数を返す。1 グループ内の全 Dataset を数える。"""
+    """(Group 数, 先頭 Dataset の shape, 総パッチ数) を返す。"""
     with h5py.File(path, "r") as f:
         items = collect_groups(f)
         if not items:

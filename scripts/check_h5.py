@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
-read_h5 の返り値を確認するスクリプト。
-使い方: python scripts/check_h5_returns.py [path_to.h5]
-        path 省略時は data/raw/scene 以下で最初の .h5 を使用。
+read_h5 の返り値を確認するスクリプト。python scripts/check_h5.py [path_to.h5]。path 省略時は data/raw/scene 以下の最初の .h5 を使用。
 """
 import os
 import sys

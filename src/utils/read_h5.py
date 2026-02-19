@@ -5,7 +5,7 @@ import torch
 
 
 def get_h5_keys(path_file):
-  """H5 内の Dataset キーを列挙（visititems）。"""
+  """H5 内の全 Dataset キーを visititems で列挙する。"""
   keys = []
   def walk(name, obj):
     if isinstance(obj, h5py.Dataset):
@@ -18,7 +18,7 @@ def get_h5_keys(path_file):
   return keys
 
 def get_h5_image_items(path_file):
-  """全画像を (key, index) で列挙。3D=1件、4D=N件。"""
+  """全画像を (key, index) のリストで列挙。3D は 1 件 (key, None)、4D は N 件 (key, 0..N-1)。"""
   items = []
   def walk(name, obj):
     if isinstance(obj, h5py.Dataset):
@@ -40,10 +40,8 @@ def get_h5_image_items(path_file):
 
 def read_h5_item(path_file, key, as_tensor=False, index=None):
   """
-  path_file の H5 を開き、key が一致する Dataset を読み込んで返す
-  key が見つからない場合、またはファイルが読み込めない場合は [] を返す
-  戻り値: numpy (as_tensor=False) または Tensor (as_tensor=True)
-  3D (H,W,C) → (C, H, W)。→ index 指定時は (C,H,W)、未指定時は (N,C,H,W)
+  path_file の H5 から key の Dataset を読み、numpy または Tensor で返す。key 不在・読み込み失敗時は []。
+  3D (H,W,C) → (C,H,W)。4D: index 指定時 (C,H,W)、未指定時 (N,C,H,W)。as_tensor=True で Tensor。
   """
   try:
     with h5py.File(path_file, "r") as f:

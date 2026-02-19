@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 """
-データセット（H5）からチャンネルごとの mean / std を計算し、
-data/statistics/mu.npy, sigma.npy として保存する。
-dino_module の NormalizeMeanStd で利用する。
-
-使い方:
-  python scripts/compute_statistics.py [--data_path data/raw/scene] [--output_dir data/statistics]
+H5 データからチャンネルごとの mean / std を計算し、mu.npy / sigma.npy として保存する。
+DINOModule 等の NormalizeMeanStd で利用。実行: python scripts/compute_statistics.py [--data_path ...] [--output_dir ...]
 """
 
 import argparse
@@ -14,7 +10,6 @@ from pathlib import Path
 
 import numpy as np
 
-# プロジェクトルートを path に追加
 _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
@@ -36,7 +31,6 @@ def _welford_combine(n1, mean1, m2_1, n2, mean2, m2_2):
 
 def _welford_update(n, mean, m2, x_flat):
     """1 枚分のピクセル x_flat (C, N) を Welford のオンライン更新に反映。"""
-    # x_flat: (C, N)
     count = x_flat.shape[1]
     if count == 0:
         return n, mean, m2
@@ -47,8 +41,8 @@ def _welford_update(n, mean, m2, x_flat):
 
 def compute_statistics(data_path: str, output_dir: str, num_bands: int | None) -> tuple[np.ndarray, np.ndarray]:
     """
-    data_path 以下の全 H5 画像についてチャンネルごとの mean / std を計算する。
-    返り値: (mean, std), 各 (C,)。std は母標準偏差（n で割る）。
+    data_path 以下の全 H5 画像でチャンネルごとの mean / std を計算する。
+    返り値: (mean, std)、各 (C,)。std は母標準偏差（分散を n で割る）。
     """
     import h5py
 
@@ -97,7 +91,6 @@ def compute_statistics(data_path: str, output_dir: str, num_bands: int | None) -
 
     print(f"  Done. Total pixels: {n_total:,}, channels: {C}", flush=True)
 
-    # 母分散 → 母標準偏差（std が 0 のチャンネルは 1 にして除算エラーを防ぐ）
     variance = m2 / max(n_total, 1)
     std = np.sqrt(np.maximum(variance, 0.0))
     std = np.where(std < 1e-8, 1.0, std)

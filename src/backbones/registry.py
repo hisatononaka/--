@@ -1,6 +1,4 @@
-"""
-Backbone のレジストリ。DINOModule が backbone_name で取得する。
-"""
+"""backbone_name で DINOModule 等がバックボーンを取得するためのレジストリ。"""
 import timm
 
 from .vit import ViTSmall, ViTTiny

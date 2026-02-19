@@ -1,14 +1,10 @@
-# Spectral adapter from https://github.com/AABNassim/spectral_earth
-# スペクトル次元で 1D 畳み込みし、ハイパースペクトル入力を 128ch に変換する。
+# Spectral adapter (https://github.com/AABNassim/spectral_earth). スペクトル次元の 1D 畳み込みで [B,C,H,W] → [B,128,H,W]。
 
 import torch.nn as nn
 
 
 class SpectralAdapter(nn.Sequential):
-  """
-  スペクトル次元で 1D 畳み込みを行い、ハイパースペクトル入力を 128ch に変換する。
-  空間サイズは保ったまま、[B, C, H, W] → [B, 128, H, W]。
-  """
+  """スペクトル次元で 1D 畳み込みし、[B, C, H, W] → [B, 128, H, W]。空間サイズは不変。"""
   def __init__(self):
     super(SpectralAdapter, self).__init__(
       nn.Conv3d(
@@ -30,13 +26,8 @@ class SpectralAdapter(nn.Sequential):
     )
 
   def forward(self, x):
-    """
-    Args:
-      x: [B, C, H, W] 例: [B, 151, H, W]。C がスペクトル次元。
-    Returns:
-      [B, 128, H, W]
-    """
-    x = x.unsqueeze(1)  # [B, 1, C, H, W]
+    """x: [B, C, H, W]。戻り値: [B, 128, H, W]。"""
+    x = x.unsqueeze(1)
     x = super(SpectralAdapter, self).forward(x)
-    x = x.squeeze(2)    # [B, 128, H, W]
+    x = x.squeeze(2)
     return x

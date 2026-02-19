@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-DINO 事前学習のエントリポイント。
-実行: プロジェクトルートで python train.py
-config のパラメータをそのまま DataModule / DINOModule に渡す。
+DINO 事前学習のエントリポイント。プロジェクトルートで python train.py。
+configs/data/scene.yaml, configs/model/dino.yaml, configs/train.yaml をマージして DataModule / DINOModule に渡す。
 """
 import os
 import sys
@@ -18,11 +17,14 @@ sys.path.insert(0, ROOT)
 from src.models.dino_module import DINOModule
 from src.datamodules.scene import SceneDataModule
 
-DM_KEYS = ("data_path", "batch_size", "num_workers", "shuffle")
+DM_KEYS = (
+    "data_path", "batch_size", "num_workers", "shuffle", "statistics_dir", "metadata_path",
+)
 MODEL_KEYS = (
-    "backbone_name", "in_channels", "hidden_dim", "bottleneck_dim", "output_dim",
+    "backbone_name", "hidden_dim", "bottleneck_dim", "output_dim",
     "lr", "warmup_epochs", "weight_decay", "momentum", "warmup_teacher_temp_epochs",
-    "size", "multicrop", "n_views", "token_patch_size", "use_adapter",
+    "global_size", "local_size", "multicrop", "n_views", "token_patch_size", "use_adapter",
+    "dynamic_img_size",
 )
 
 
@@ -44,6 +46,10 @@ def main():
     dm = SceneDataModule(project_root=ROOT, **dm_kwargs)
 
     model_kwargs = {k: cfg[k] for k in MODEL_KEYS if k in cfg}
+    if "num_bands" in cfg:
+        model_kwargs["in_channels"] = cfg["num_bands"]
+    if "statistics_dir" in cfg:
+        model_kwargs["statistics_dir"] = os.path.join(ROOT, cfg["statistics_dir"])
     model = DINOModule(**model_kwargs)
 
     max_epochs = cfg.get("max_epochs", 100) or 100
@@ -51,7 +57,6 @@ def main():
     logger_name = cfg.get("logger_name", "dino")
     accelerator = cfg.get("accelerator", "auto")
     logger = CSVLogger(save_dir=log_dir, name=logger_name)
-    # 学習した重みを保存（train_loss 最小のベスト + 最終エポック）
     checkpoint_callback = ModelCheckpoint(
         monitor="train_loss",
         mode="min",
