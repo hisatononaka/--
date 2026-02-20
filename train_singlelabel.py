@@ -9,6 +9,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
+import torch
 import yaml
 from lightning import Trainer
 from lightning.pytorch.callbacks import ModelCheckpoint
@@ -89,6 +90,11 @@ def main():
     log_dir = os.path.join(ROOT, cfg.get("log_dir", "logs"))
     logger_name = cfg.get("logger_name", "singlelabel")
     accelerator = cfg.get("accelerator", "auto")
+    # SpectralAdapter は Conv3d を使用するため MPS 非対応。MPS のときは CPU にフォールバック
+    if accelerator == "auto" and cfg.get("use_adapter", True):
+        if getattr(torch.backends.mps, "is_available", lambda: False)():
+            accelerator = "cpu"
+            print("MPS is available but Conv3d (SpectralAdapter) is not supported on MPS. Using CPU.", flush=True)
     logger = CSVLogger(save_dir=log_dir, name=logger_name)
     val_ratio = cfg.get("val_ratio") or 0.0
     test_ratio = cfg.get("test_ratio") or 0.0
