@@ -14,7 +14,7 @@ import torch
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader, random_split
 
-from ..datasets.scene import H5Dataset
+from ..datasets.scene import H5Dataset, id_from_h5_key
 
 
 def _collate_image_batch(batch):
@@ -235,3 +235,30 @@ class SceneDataModule(LightningDataModule):
             drop_last=False,
             collate_fn=collate_fn,
         )
+
+    def get_split_sample_ids(self) -> dict[str, List[str]]:
+        """
+        単一ラベル・train/val/test 分割時のみ有効。
+        'train' / 'val' / 'test' をキーとし、各分割に含まれるサンプル ID のリストを返す。
+        """
+        out: dict[str, List[str]] = {}
+        base = self._dataset
+        if not getattr(base, "_single_label_mode", False) or not hasattr(base, "_items"):
+            return out
+
+        def ids_from_subset(subset):
+            if subset is None:
+                return []
+            indices = subset.indices
+            return [
+                id_from_h5_key(base._items[i][0], base._items[i][1])
+                for i in indices
+            ]
+
+        if self._train_dataset is not None:
+            out["train"] = ids_from_subset(self._train_dataset)
+        if self._val_dataset is not None:
+            out["val"] = ids_from_subset(self._val_dataset)
+        if self._test_dataset is not None:
+            out["test"] = ids_from_subset(self._test_dataset)
+        return out

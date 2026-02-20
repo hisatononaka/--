@@ -14,5 +14,5 @@ multi_to_single: "first"
 # max_samples: 100
 # seed: 42
 
-val_ratio: 0.1   # 単一ラベル時のみ。検証割合（0 なら検証なし）
-test_ratio: 0.1  # 単一ラベル時のみ。テスト割合。残りが train（val_ratio + test_ratio < 1）
+val_ratio: 0.1 # 単一ラベル時のみ。検証割合（0 なら検証なし）
+test_ratio: 0.1 # 単一ラベル時のみ。テスト割合。残りが train（val_ratio + test_ratio < 1）

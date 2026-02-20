@@ -87,32 +87,32 @@ python train_singlelabel.py
 
 ## 設定例
 
-| 設定                    | 説明                               | 例               |
-| ----------------------- | ---------------------------------- | ---------------- |
-| `data_path`             | H5 が入ったディレクトリ            | `data/raw/scene` |
-| `statistics_dir`        | 正規化用 mu.npy / sigma.npy の場所 | `data/statistics/scene` |
-| `metadata_path`         | scene_tags / object_tags 用 JSON   | （未指定時は statistics_dir/metadata.json） |
-| `single_label_classes` | 単一ラベル分類で使うラベル名のリスト（必須） | `["class_a", "class_b"]` |
-| `val_ratio` / `test_ratio` | 単一ラベル時の検証・テスト割合  | 0.1（val_ratio + test_ratio < 1） |
-| `num_bands`             | スペクトルバンド数                  | 151              |
-| `backbone_name`         | バックボーン                        | `vit_small`      |
-| `use_adapter`           | 単一ラベルで SpectralAdapter を通すか（下流も adapter 通過） | `true`           |
-| `patch_size`            | 空間サイズ（単一ラベル時のリサイズ先 / DINO の global_size に連動） | 128              |
-| `global_size` / `local_size` | DINO の global / local crop サイズ（ViT は dynamic_img_size で両方受け付け可能） | 128 / 48         |
-| `max_epochs`            | 学習エポック数                      | 100              |
+| 設定                         | 説明                                                                             | 例                                          |
+| ---------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- |
+| `data_path`                  | H5 が入ったディレクトリ                                                          | `data/raw/scene`                            |
+| `statistics_dir`             | 正規化用 mu.npy / sigma.npy の場所                                               | `data/statistics/scene`                     |
+| `metadata_path`              | scene_tags / object_tags 用 JSON                                                 | （未指定時は statistics_dir/metadata.json） |
+| `single_label_classes`       | 単一ラベル分類で使うラベル名のリスト（必須）                                     | `["class_a", "class_b"]`                    |
+| `val_ratio` / `test_ratio`   | 単一ラベル時の検証・テスト割合                                                   | 0.1（val_ratio + test_ratio < 1）           |
+| `num_bands`                  | スペクトルバンド数                                                               | 151                                         |
+| `backbone_name`              | バックボーン                                                                     | `vit_small`                                 |
+| `use_adapter`                | 単一ラベルで SpectralAdapter を通すか（下流も adapter 通過）                     | `true`                                      |
+| `patch_size`                 | 空間サイズ（単一ラベル時のリサイズ先 / DINO の global_size に連動）              | 128                                         |
+| `global_size` / `local_size` | DINO の global / local crop サイズ（ViT は dynamic_img_size で両方受け付け可能） | 128 / 48                                    |
+| `max_epochs`                 | 学習エポック数                                                                   | 100                                         |
 
 詳細は各 YAML と `src/models/dino_module.py` / `src/models/singlelabel_classification_module.py` の docstring を参照してください。
 
 ## スクリプト
 
-| スクリプト                      | 説明                                                                 |
-| ------------------------------- | -------------------------------------------------------------------- |
-| `train.py`                      | DINO 事前学習のエントリポイント                                      |
-| `train_singlelabel.py`         | 単一ラベル分類のエントリポイント（single_label_classes 必須）       |
+| スクリプト                      | 説明                                                                                     |
+| ------------------------------- | ---------------------------------------------------------------------------------------- |
+| `train.py`                      | DINO 事前学習のエントリポイント                                                          |
+| `train_singlelabel.py`          | 単一ラベル分類のエントリポイント（single_label_classes 必須）                            |
 | `test.py`                       | データ・metadata の検証と DataLoader 空の原因特定（config / path / ID / 単一ラベル一致） |
-| `scripts/compute_statistics.py` | H5 からチャンネルごとの mean / std を計算し mu.npy, sigma.npy に保存 |
-| `scripts/h5_to_npy.py`         | H5 を日付・グループ別の .npy に展開（--data-dir, --output-dir）       |
-| `scripts/check_h5.py`          | read_h5 の返り値（キー・アイテム・読み込み結果）を確認                |
+| `scripts/compute_statistics.py` | H5 からチャンネルごとの mean / std を計算し mu.npy, sigma.npy に保存                     |
+| `scripts/h5_to_npy.py`          | H5 を日付・グループ別の .npy に展開（--data-dir, --output-dir）                          |
+| `scripts/check_h5.py`           | read_h5 の返り値（キー・アイテム・読み込み結果）を確認                                   |
 
 ## ディレクトリ構成
 

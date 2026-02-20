@@ -3,11 +3,13 @@
 単一ラベル分類のエントリポイント。プロジェクトルートで python train_singlelabel.py。
 data / model / train の config を SceneDataModule / SingleLabelClassificationModule に渡す。
 single_label_classes は data config で必須。val_ratio / test_ratio で train/val/test に分割し、学習後に test で最終精度を表示。
+学習ごとに run_log.yaml で使用 ID・checkpoint・設定を記録する。
 """
 import os
 import sys
-import yaml
+from datetime import datetime, timezone
 
+import yaml
 from lightning import Trainer
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import CSVLogger
@@ -58,6 +60,15 @@ def main():
     dm = SceneDataModule(project_root=ROOT, **dm_kwargs)
     dm.setup("fit")
 
+    # 学習ログ用: 使用した ID と設定を記録
+    run_log = {
+        "run_timestamp": datetime.now(timezone.utc).isoformat(),
+        "config": cfg,
+        "num_classes": dm.num_classes,
+        "classes": getattr(dm, "classes", []),
+        "split_sample_ids": dm.get_split_sample_ids(),
+    }
+
     model_kwargs = {k: cfg[k] for k in MODEL_KEYS if k in cfg}
     model_kwargs["num_classes"] = dm.num_classes
     if "num_bands" in cfg:
@@ -96,8 +107,17 @@ def main():
         callbacks=[checkpoint_callback],
     )
     trainer.fit(model, datamodule=dm)
+
+    # checkpoint パスをログに追加
+    for cb in trainer.callbacks:
+        if isinstance(cb, ModelCheckpoint):
+            run_log["checkpoint_best"] = getattr(cb, "best_model_path", None) or ""
+            run_log["checkpoint_last"] = getattr(cb, "last_model_path", None) or ""
+            break
+
     if val_ratio > 0:
         trainer.validate(model, datamodule=dm)
+    test_results = None
     if test_ratio > 0:
         test_results = trainer.test(model, datamodule=dm)
         if test_results:
@@ -106,9 +126,24 @@ def main():
             acc = r.get("test_acc")
             loss = float(loss) if hasattr(loss, "item") else loss
             acc = float(acc) if hasattr(acc, "item") else acc
+            run_log["test_loss"] = loss
+            run_log["test_acc"] = acc
             print("--- Test (最終精度) ---")
             print(f"  test_loss: {loss:.4f}" if isinstance(loss, (int, float)) else f"  test_loss: {loss}")
             print(f"  test_acc:  {acc:.4f}" if isinstance(acc, (int, float)) else f"  test_acc:  {acc}")
+
+    # run_log を CSV ログと同じディレクトリに保存
+    run_log_dir = getattr(logger, "log_dir", None)
+    if not run_log_dir:
+        run_log_dir = os.path.join(
+            ROOT, cfg.get("log_dir", "logs"), logger_name,
+            f"version_{getattr(logger, 'version', 0)}",
+        )
+    os.makedirs(run_log_dir, exist_ok=True)
+    run_log_path = os.path.join(run_log_dir, "run_log.yaml")
+    with open(run_log_path, "w", encoding="utf-8") as f:
+        yaml.dump(run_log, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+    print(f"Run log saved: {run_log_path}")
 
 
 if __name__ == "__main__":
